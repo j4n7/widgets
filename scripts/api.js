@@ -31,6 +31,21 @@ const api = {
     return WidgetStore.updateWidget(widgetId, updates);
   },
 
+  async hideWidget(widgetId) {
+    if (game.user?.isGM !== true) return null;
+    return WidgetStore.hideWidget(widgetId);
+  },
+
+  async showWidget(widgetId) {
+    if (game.user?.isGM !== true) return null;
+    return WidgetStore.showWidget(widgetId);
+  },
+
+  async toggleWidgetVisibility(widgetId) {
+    if (game.user?.isGM !== true) return null;
+    return WidgetStore.toggleWidgetVisibility(widgetId);
+  },
+
   async removeWidget(widgetId) {
     if (game.user?.isGM !== true) return;
     await WidgetStore.removeWidget(widgetId);

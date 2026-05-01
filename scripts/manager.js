@@ -29,10 +29,15 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
   };
 
   async _prepareContext() {
+    const widgets = WidgetStore.getWidgets().map((widget) => ({
+      ...widget,
+      visible: widget.visible !== false
+    }));
+
     return {
-      widgets: WidgetStore.getWidgets(),
+      widgets,
       widgetTypes: WidgetTypes.list(),
-      hasWidgets: WidgetStore.getWidgets().length > 0
+      hasWidgets: widgets.length > 0
     };
   }
 
@@ -62,7 +67,7 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
     root.querySelector("[data-action='clear-all']")?.addEventListener("click", async () => {
       const confirmed = await Dialog.confirm({
         title: "Clear All Widgets",
-        content: "<p>Remove all widgets from the world layout?</p>"
+        content: "<p>Delete all widgets from the world layout?</p><p>This action cannot be undone.</p>"
       });
 
       if (!confirmed) return;
@@ -70,9 +75,28 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
       await this.render(true);
     });
 
-    for (const removeButton of root.querySelectorAll("[data-action='remove-widget']")) {
-      removeButton.addEventListener("click", async (event) => {
+    for (const visibilityButton of root.querySelectorAll("[data-action='toggle-visibility']")) {
+      visibilityButton.addEventListener("click", async (event) => {
         const widgetId = event.currentTarget.dataset.widgetId;
+        const widget = WidgetStore.getWidget(widgetId);
+        if (!widget) return;
+        await WidgetStore.updateWidget(widgetId, { visible: widget.visible === false });
+        await this.render(true);
+      });
+    }
+
+    for (const deleteButton of root.querySelectorAll("[data-action='delete-widget']")) {
+      deleteButton.addEventListener("click", async (event) => {
+        const widgetId = event.currentTarget.dataset.widgetId;
+        const widget = WidgetStore.getWidget(widgetId);
+        if (!widget) return;
+
+        const confirmed = await Dialog.confirm({
+          title: "Delete Widget",
+          content: `<p>Delete <strong>${widget.title}</strong> permanently?</p><p>This action cannot be undone.</p>`
+        });
+
+        if (!confirmed) return;
         await WidgetStore.removeWidget(widgetId);
         await this.render(true);
       });

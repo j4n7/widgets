@@ -123,6 +123,24 @@ export class WidgetStore {
     return next;
   }
 
+  static async setWidgetVisibility(widgetId, visible) {
+    return this.updateWidget(widgetId, { visible: Boolean(visible) });
+  }
+
+  static async showWidget(widgetId) {
+    return this.setWidgetVisibility(widgetId, true);
+  }
+
+  static async hideWidget(widgetId) {
+    return this.setWidgetVisibility(widgetId, false);
+  }
+
+  static async toggleWidgetVisibility(widgetId) {
+    const widget = this.getWidget(widgetId);
+    if (!widget) throw new Error(`Widget not found: ${widgetId}`);
+    return this.setWidgetVisibility(widgetId, widget.visible === false);
+  }
+
   static async removeWidget(widgetId) {
     const state = this.loadState();
     state.widgets = state.widgets.filter((widget) => widget.id !== widgetId);

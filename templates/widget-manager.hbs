@@ -13,18 +13,46 @@
     {{#if hasWidgets}}
       <div class="widgets-manager-list">
         {{#each widgets}}
-          <article class="widgets-manager-item">
+          <article class="widgets-manager-item {{#unless visible}}is-hidden{{/unless}}">
             <div>
               <div><strong>{{title}}</strong></div>
               <div class="widgets-manager-item-meta">
-                Type: {{type}} · Position: {{position.left}}, {{position.top}} · Locked: {{locked}}
+                Type: {{type}} · Position: {{position.left}}, {{position.top}} · Locked: {{locked}} · Visible: {{visible}}
               </div>
             </div>
             <div class="widgets-manager-item-actions">
-              <button type="button" data-action="toggle-lock" data-widget-id="{{id}}">
-                {{#if locked}}Unlock{{else}}Lock{{/if}}
+              <button
+                type="button"
+                class="widgets-manager-icon-button"
+                data-action="toggle-lock"
+                data-widget-id="{{id}}"
+                title="{{#if locked}}Unlock widget{{else}}Lock widget{{/if}}"
+                aria-label="{{#if locked}}Unlock widget{{else}}Lock widget{{/if}}"
+              >
+                <i class="fas {{#if locked}}fa-lock{{else}}fa-lock-open{{/if}}"></i>
               </button>
-              <button type="button" data-action="remove-widget" data-widget-id="{{id}}">Remove</button>
+
+              <button
+                type="button"
+                class="widgets-manager-icon-button"
+                data-action="toggle-visibility"
+                data-widget-id="{{id}}"
+                title="{{#if visible}}Hide widget{{else}}Show widget{{/if}}"
+                aria-label="{{#if visible}}Hide widget{{else}}Show widget{{/if}}"
+              >
+                <i class="fas {{#if visible}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+              </button>
+
+              <button
+                type="button"
+                class="widgets-manager-icon-button is-danger"
+                data-action="delete-widget"
+                data-widget-id="{{id}}"
+                title="Delete widget"
+                aria-label="Delete widget"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
           </article>
         {{/each}}

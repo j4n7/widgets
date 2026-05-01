@@ -50,9 +50,9 @@ export class WidgetShell {
               <button
                 type="button"
                 class="widgets-shell-button"
-                data-action="remove"
-                title="Remove widget"
-                aria-label="Remove widget"
+                data-action="hide"
+                title="Hide widget"
+                aria-label="Hide widget"
               >
                 <i class="fas fa-xmark"></i>
               </button>
@@ -91,10 +91,10 @@ export class WidgetShell {
   activateListeners() {
     if (!this.element || game.user?.isGM !== true) return;
 
-    this.element.querySelector("[data-action='remove']")?.addEventListener("click", async (event) => {
+    this.element.querySelector("[data-action='hide']")?.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
-      await WidgetStore.removeWidget(this.widget.id);
+      await WidgetStore.hideWidget(this.widget.id);
     });
 
     this.element.querySelector("[data-action='toggle-lock']")?.addEventListener("click", async (event) => {
