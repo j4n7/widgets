@@ -89,7 +89,17 @@ export class WidgetShell {
   }
 
   activateListeners() {
-    if (!this.element || game.user?.isGM !== true) return;
+    if (!this.element) return;
+
+    this.element.querySelectorAll("[data-action='open-actor-sheet']").forEach((portraitFrame) => {
+      portraitFrame.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.openActorSheet(event.currentTarget.dataset.actorId);
+      });
+    });
+
+    if (game.user?.isGM !== true) return;
 
     this.element.querySelector("[data-action='hide']")?.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -106,6 +116,20 @@ export class WidgetShell {
 
     const handle = this.element.querySelector("[data-drag-handle='true']");
     handle?.addEventListener("pointerdown", (event) => this.onPointerDown(event));
+  }
+
+  openActorSheet(actorId) {
+    const actor = game.actors?.get(actorId);
+    if (!actor) return;
+
+    const canOpen = actor.testUserPermission(
+      game.user,
+      CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER
+    );
+
+    if (!canOpen) return;
+
+    actor.sheet?.render(true);
   }
 
   onPointerDown(event) {

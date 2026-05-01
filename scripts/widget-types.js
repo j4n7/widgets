@@ -164,6 +164,25 @@ function getActorHealingPotionCount(actor) {
   return total;
 }
 
+function getActorGoldValue(actor) {
+  const currency = getProperty(actor, "system.currency", {}) ?? {};
+
+  const platinum = Number(currency.pp ?? 0);
+  const gold = Number(currency.gp ?? 0);
+  const electrum = Number(currency.ep ?? 0);
+  const silver = Number(currency.sp ?? 0);
+  const copper = Number(currency.cp ?? 0);
+
+  const goldValue =
+    (Number.isFinite(platinum) ? platinum * 10 : 0) +
+    (Number.isFinite(gold) ? gold : 0) +
+    (Number.isFinite(electrum) ? electrum * 0.5 : 0) +
+    (Number.isFinite(silver) ? silver * 0.1 : 0) +
+    (Number.isFinite(copper) ? copper * 0.01 : 0);
+
+  return Math.round(goldValue);
+}
+
 function renderActorCard(actor) {
   const hp = getActorHp(actor);
   const hd = getActorHitDice(actor);
@@ -171,10 +190,16 @@ function renderActorCard(actor) {
   const level = getActorLevel(actor);
   const slotsHtml = renderActorSpellSlots(actor);
   const potionCount = getActorHealingPotionCount(actor);
+  const goldValue = getActorGoldValue(actor);
 
   return `
     <article class="widgets-actor-card" data-actor-id="${actor.id}">
-      <div class="widgets-actor-portrait-frame">
+      <div
+        class="widgets-actor-portrait-frame"
+        data-action="open-actor-sheet"
+        data-actor-id="${actor.id}"
+        title="Double-click to open character sheet"
+      >
         <img
           class="widgets-actor-portrait"
           src="${portrait}"
@@ -204,10 +229,17 @@ function renderActorCard(actor) {
           <span class="widgets-actor-resource-value">${formatPair(hd.value, hd.max)}</span>
         </div>
 
-        <div class="widgets-actor-line widgets-actor-resource-line">
-          <i class="fas fa-flask widgets-actor-resource-icon" aria-hidden="true"></i>
-          <!-- <span class="widgets-actor-resource-label">Potions:</span> -->
-          <span class="widgets-actor-resource-value">${potionCount}</span>
+        <div class="widgets-actor-line widgets-actor-resource-line widgets-actor-split-resource-line">
+          <span class="widgets-actor-resource-pair">
+            <i class="fas fa-flask widgets-actor-resource-icon" aria-hidden="true"></i>
+            <!-- <span class="widgets-actor-resource-label">Potions:</span> -->
+            <span class="widgets-actor-resource-value">${potionCount}</span>
+          </span>
+          <span class="widgets-actor-resource-pair">
+            <i class="fas fa-coins widgets-actor-resource-icon" aria-hidden="true"></i>
+            <!-- <span class="widgets-actor-resource-label">Gold:</span> -->
+            <span class="widgets-actor-resource-value">${goldValue}</span>
+          </span>
         </div>
 
         <div class="widgets-actor-line widgets-actor-resource-line widgets-actor-slots-line">
@@ -264,7 +296,7 @@ Hooks.once("ready", () => {
     createDefault(existingCount = 0) {
       return WidgetStore.normalizeWidget({
         type: "text",
-        title: `Text ${existingCount + 1}`,
+        title: "Text",
         position: WidgetStore.getInitialPosition(existingCount),
         config: { text: "" }
       });

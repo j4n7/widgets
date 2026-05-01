@@ -282,6 +282,7 @@
   align-items: stretch;
   justify-content: stretch;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 #widgets-root .widgets-actor-portrait {
@@ -340,6 +341,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+#widgets-root .widgets-actor-split-resource-line {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+#widgets-root .widgets-actor-resource-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 #widgets-root .widgets-actor-resource-icon {
