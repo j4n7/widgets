@@ -52,6 +52,9 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
       const count = WidgetStore.getWidgets().length;
       const type = WidgetTypes.get("text");
       const widget = type.createDefault(count);
+
+      widget.title = "Text";
+
       await WidgetStore.createWidget(widget);
       await this.render(true);
     });
@@ -65,9 +68,19 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
     });
 
     root.querySelector("[data-action='clear-all']")?.addEventListener("click", async () => {
-      const confirmed = await Dialog.confirm({
-        title: "Clear All Widgets",
-        content: "<p>Delete all widgets from the world layout?</p><p>This action cannot be undone.</p>"
+      const confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: {
+          title: "Clear All Widgets"
+        },
+        content: "<p>Delete all widgets from the world layout?</p><p>This action cannot be undone.</p>",
+        yes: {
+          label: "Delete All",
+          icon: "fa-solid fa-trash"
+        },
+        no: {
+          label: "Cancel"
+        },
+        modal: true
       });
 
       if (!confirmed) return;
@@ -91,9 +104,19 @@ export class WidgetsManagerApp extends HandlebarsApplicationMixin(ApplicationV2)
         const widget = WidgetStore.getWidget(widgetId);
         if (!widget) return;
 
-        const confirmed = await Dialog.confirm({
-          title: "Delete Widget",
-          content: `<p>Delete <strong>${widget.title}</strong> permanently?</p><p>This action cannot be undone.</p>`
+        const confirmed = await foundry.applications.api.DialogV2.confirm({
+          window: {
+            title: "Delete Widget"
+          },
+          content: `<p>Delete <strong>${widget.title}</strong> permanently?</p><p>This action cannot be undone.</p>`,
+          yes: {
+            label: "Delete",
+            icon: "fa-solid fa-trash"
+          },
+          no: {
+            label: "Cancel"
+          },
+          modal: true
         });
 
         if (!confirmed) return;
