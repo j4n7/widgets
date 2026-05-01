@@ -22,6 +22,90 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function renderInlineMarkdown(value) {
+  return escapeHtml(value)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1<em>$2</em>");
+}
+
+function renderBasicMarkdown(value) {
+  const source = String(value ?? "");
+  if (!source.trim()) return "No text yet.";
+
+  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  const html = [];
+  let listType = null;
+
+  const closeList = () => {
+    if (!listType) return;
+    html.push(`</${listType}>`);
+    listType = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      closeList();
+      continue;
+    }
+
+    const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      closeList();
+      const level = Math.min(4, headingMatch[1].length);
+      html.push(`<h${level}>${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+
+    const unorderedMatch = line.match(/^[-*]\s+(.+)$/);
+    if (unorderedMatch) {
+      if (listType !== "ul") {
+        closeList();
+        html.push("<ul>");
+        listType = "ul";
+      }
+      html.push(`<li>${renderInlineMarkdown(unorderedMatch[1])}</li>`);
+      continue;
+    }
+
+    const orderedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+    if (orderedMatch) {
+      if (listType !== "ol") {
+        closeList();
+        html.push("<ol>");
+        listType = "ol";
+      }
+      html.push(`<li>${renderInlineMarkdown(orderedMatch[1])}</li>`);
+      continue;
+    }
+
+    closeList();
+    html.push(`<p>${renderInlineMarkdown(line)}</p>`);
+  }
+
+  closeList();
+  return html.join("\n");
+}
+
+function getTextEditingSet() {
+  widgetsModuleState.editingTextWidgets ??= new Set();
+  return widgetsModuleState.editingTextWidgets;
+}
+
+function isTextWidgetEditing(widgetId) {
+  return getTextEditingSet().has(widgetId);
+}
+
+function setTextWidgetEditing(widgetId, isEditing) {
+  const editingSet = getTextEditingSet();
+
+  if (isEditing) editingSet.add(widgetId);
+  else editingSet.delete(widgetId);
+}
+
 function loadDraftText(widget) {
   return widgetsModuleState.textDrafts.get(widget.id) ?? String(widget.config?.text ?? "");
 }
@@ -198,7 +282,7 @@ function renderActorCard(actor) {
         class="widgets-actor-portrait-frame"
         data-action="open-actor-sheet"
         data-actor-id="${actor.id}"
-        title="Double-click to open character sheet"
+        title="Click to open character sheet"
       >
         <img
           class="widgets-actor-portrait"
@@ -304,12 +388,13 @@ Hooks.once("ready", () => {
 
     render(widget) {
       const text = String(widget.config?.text ?? "");
-      const isEditable = game.user?.isGM === true;
-      const draftText = isEditable ? loadDraftText(widget) : text;
+      const isGM = game.user?.isGM === true;
+      const isEditing = isGM && isTextWidgetEditing(widget.id);
+      const draftText = isEditing ? loadDraftText(widget) : text;
 
-      if (isEditable) {
+      if (isEditing) {
         return `
-          <div class="widgets-text-card">
+          <div class="widgets-text-card widgets-text-card-editing">
             <textarea
               class="widgets-textarea"
               data-widget-text-editor="${widget.id}"
@@ -322,7 +407,10 @@ Hooks.once("ready", () => {
 
       return `
         <div class="widgets-text-card">
-          <div class="widgets-text-content ${text.trim() ? "" : "is-empty"}">${text.trim() ? escapeHtml(text).replaceAll("\n", "<br>") : "No text yet."}</div>
+          <div
+            class="widgets-text-content ${text.trim() ? "" : "is-empty"}"
+            ${isGM ? `data-action="edit-text-widget" data-widget-id="${widget.id}" title="Double-click to edit"` : ""}
+          >${renderBasicMarkdown(text)}</div>
         </div>
       `;
     },
@@ -330,34 +418,57 @@ Hooks.once("ready", () => {
     activate(widget, element) {
       if (game.user?.isGM !== true) return;
 
+      const textContent = element.querySelector(`[data-action="edit-text-widget"][data-widget-id="${widget.id}"]`);
+      textContent?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        saveDraftText(widget.id, String(widget.config?.text ?? ""));
+        setTextWidgetEditing(widget.id, true);
+        widgetsModuleState.renderer?.renderAll();
+      });
+
       const textarea = element.querySelector(`[data-widget-text-editor="${widget.id}"]`);
       if (!textarea) return;
 
       let committedText = String(widget.config?.text ?? "");
       textarea.value = loadDraftText(widget);
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.max(96, textarea.scrollHeight)}px`;
+
+      const resizeTextarea = () => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${Math.max(96, textarea.scrollHeight)}px`;
+      };
+
+      requestAnimationFrame(() => {
+        resizeTextarea();
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      });
 
       textarea.addEventListener("input", () => {
         saveDraftText(widget.id, textarea.value);
-        textarea.style.height = "auto";
-        textarea.style.height = `${Math.max(96, textarea.scrollHeight)}px`;
+        resizeTextarea();
       });
 
       textarea.addEventListener("blur", async () => {
         const nextText = textarea.value;
         saveDraftText(widget.id, nextText);
+        setTextWidgetEditing(widget.id, false);
 
-        if (nextText === committedText) return;
+        if (nextText === committedText) {
+          clearDraftText(widget.id);
+          widgetsModuleState.renderer?.renderAll();
+          return;
+        }
 
         committedText = nextText;
+        clearDraftText(widget.id);
+
         await WidgetStore.updateWidget(widget.id, {
           config: {
             ...(widget.config ?? {}),
             text: nextText
           }
         });
-        clearDraftText(widget.id);
       });
     }
   });
