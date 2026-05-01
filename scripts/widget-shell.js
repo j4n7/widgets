@@ -92,7 +92,7 @@ export class WidgetShell {
     if (!this.element) return;
 
     this.element.querySelectorAll("[data-action='open-actor-sheet']").forEach((portraitFrame) => {
-      portraitFrame.addEventListener("dblclick", (event) => {
+      portraitFrame.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
         this.openActorSheet(event.currentTarget.dataset.actorId);

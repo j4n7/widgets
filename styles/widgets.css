@@ -283,6 +283,21 @@
   justify-content: stretch;
   box-sizing: border-box;
   cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+#widgets-root .widgets-actor-portrait-frame:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    0 0 10px rgba(255, 255, 255, 0.14);
+}
+
+#widgets-root .widgets-actor-portrait-frame:active {
+  transform: scale(0.98);
 }
 
 #widgets-root .widgets-actor-portrait {
@@ -291,6 +306,11 @@
   display: block;
   object-fit: cover;
   object-position: var(--widgets-portrait-focus-x) var(--widgets-portrait-focus-y);
+  transition: filter 140ms ease;
+}
+
+#widgets-root .widgets-actor-portrait-frame:hover .widgets-actor-portrait {
+  filter: brightness(1.12) saturate(1.05);
 }
 
 #widgets-root .widgets-actor-portrait.is-portrait-vertical {
