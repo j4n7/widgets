@@ -1,0 +1,30 @@
+{
+  "id": "widgets",
+  "title": "Widgets",
+  "description": "Phase 1 universal floating widgets base for Foundry VTT 13.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "OpenAI"
+    }
+  ],
+  "esmodules": [
+    "scripts/store.js",
+    "scripts/widget-types.js",
+    "scripts/widget-shell.js",
+    "scripts/renderer.js",
+    "scripts/manager.js",
+    "scripts/api.js"
+  ],
+  "styles": [
+    "styles/widgets.css",
+    "styles/widget-manager.css"
+  ],
+  "templates": [
+    "templates/widget-manager.hbs"
+  ]
+}

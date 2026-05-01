@@ -1,0 +1,36 @@
+<div class="widgets-manager">
+  <section>
+    <div class="widgets-manager-toolbar">
+      <button type="button" data-action="create-text">Create Text Widget</button>
+      <button type="button" data-action="create-party-actors">Create Party Actors Widget</button>
+      <button type="button" data-action="clear-all">Clear All</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Current Widgets</h2>
+
+    {{#if hasWidgets}}
+      <div class="widgets-manager-list">
+        {{#each widgets}}
+          <article class="widgets-manager-item">
+            <div>
+              <div><strong>{{title}}</strong></div>
+              <div class="widgets-manager-item-meta">
+                Type: {{type}} · Position: {{position.left}}, {{position.top}} · Locked: {{locked}}
+              </div>
+            </div>
+            <div class="widgets-manager-item-actions">
+              <button type="button" data-action="toggle-lock" data-widget-id="{{id}}">
+                {{#if locked}}Unlock{{else}}Lock{{/if}}
+              </button>
+              <button type="button" data-action="remove-widget" data-widget-id="{{id}}">Remove</button>
+            </div>
+          </article>
+        {{/each}}
+      </div>
+    {{else}}
+      <p>No widgets created yet.</p>
+    {{/if}}
+  </section>
+</div>

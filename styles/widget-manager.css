@@ -1,0 +1,48 @@
+.widgets-manager-app .window-content {
+  background: rgba(28, 34, 42, 0.96);
+}
+
+.widgets-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+}
+
+.widgets-manager-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.widgets-manager-toolbar button,
+.widgets-manager-list button {
+  border-radius: 10px;
+}
+
+.widgets-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.widgets-manager-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.widgets-manager-item-meta {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.widgets-manager-item-actions {
+  display: flex;
+  gap: 8px;
+}
